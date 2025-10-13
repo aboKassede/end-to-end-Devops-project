@@ -1,0 +1,6 @@
+apiVersion: v2
+name: k8s-app
+description: A Helm chart for K8s application with Tomcat, MySQL, Memcached, and RabbitMQ
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

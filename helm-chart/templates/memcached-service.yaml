@@ -1,0 +1,16 @@
+{{- if .Values.memcached.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "k8s-app.fullname" . }}-memcached
+  labels:
+    {{- include "k8s-app.labels" . | nindent 4 }}
+    app: memcached
+spec:
+  selector:
+    app: memcached
+  ports:
+  - port: {{ .Values.memcached.service.port }}
+    targetPort: {{ .Values.memcached.service.port }}
+  type: {{ .Values.memcached.service.type }}
+{{- end }}

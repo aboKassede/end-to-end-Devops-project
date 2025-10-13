@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Update system and install Java
+sudo apt update
+sudo apt install openjdk-17-jdk -y
+java -version
+
+set -e
+
+# 1. Create user
+if ! id "nexus" &>/dev/null; then
+  sudo useradd -d /opt/nexus -s /bin/bash "nexus"
+  echo "nexus:nexus" | sudo chpasswd
+fi
+
+# 2. Set file limits
+echo "nexus - nofile 65536" | sudo tee /etc/security/limits.d/nexus.conf
+#sudo ulimit -n 65536
+
+
+# 3. Download Nexus
+cd /tmp
+sudo wget -q "https://download.sonatype.com/nexus/3/nexus-3.84.0-03-linux-x86_64.tar.gz"
+
+# 4. Extract
+tar xzf "nexus-3.84.0-03-linux-x86_64.tar.gz"
+
+# 5. Move to /opt
+sudo mv "nexus-3.84.0-03" /opt/nexus
+sudo mv sonatype-work /opt/
+
+# 6. Set permissions
+sudo chown -R "nexus:nexus" /opt/nexus /opt/sonatype-work
+
+# 7. Configure run_as_user
+echo "run_as_user=nexus" | sudo tee /opt/nexus/bin/nexus.rc
+
+
+# 3. Create systemd service
+sudo tee /etc/systemd/system/nexus.service > /dev/null <<EOT
+[Unit]
+Description=Nexus Repository Manager
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+ExecStart=/opt/nexus/bin/nexus start
+ExecStop=/opt/nexus/bin/nexus stop
+User=nexus
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+EOT
+
+# 4. Reload systemd and enable/start service
+sudo systemctl daemon-reload
+sudo systemctl enable nexus
+sudo systemctl start nexus
+#sudo cat /opt/sonatype-work/nexus3/admin.password
+
+
+

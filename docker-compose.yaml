@@ -1,0 +1,70 @@
+services:
+  mysql-service:
+    image: abokassede/kubernetes:mysql-v1
+    container_name: mysql
+    ports:
+      - "3306:3306"
+  
+  memcached-service:
+    image: abokassede/kubernetes:memcached
+    container_name: memcached
+    ports:
+      - "11211:11211"
+    
+  rabbitmq-service:
+    image: abokassede/kubernetes:rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=test
+      - RABBITMQ_DEFAULT_PASS=test
+    
+  tomcat-service:
+    image: abokassede/kubernetes:tomcat-v1
+    container_name: tomcat
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq-service
+
+#############################################################
+
+# services:
+#   mysql-service:
+#     build:
+#       context: ./docker-files/mysql
+#     image: mysql:latest
+#     container_name: mysql
+#     ports:
+#       - "3306:3306"
+#     # volumes:
+#     #   - dbDate:/var/lib/mysql
+  
+#   memcached-service:
+#     image: memcached:1.6
+#     container_name: memcached
+#     ports:
+#       - "11211:11211"
+    
+#   rabbitmq-service:
+#     image: rabbitmq:latest
+#     container_name: rabbitmq
+#     ports:
+#       - "5672:5672"
+#     environment:
+#       - RABBITMQ_DEFAULT_USER=test
+#       - RABBITMQ_DEFAULT_PASS=test
+    
+#   tomcat-service:
+#     build:
+#       context: ./
+#     image: tomcat:latest
+#     container_name: tomcat
+#     ports:
+#       - "8080:8080"
+#     depends_on:
+#       - rabbitmq-service
+
+# # volumes:
+# #   dbDate : {}

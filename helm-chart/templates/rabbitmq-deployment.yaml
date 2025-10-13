@@ -1,0 +1,39 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8s-app.fullname" . }}-rabbitmq
+  labels:
+    {{- include "k8s-app.labels" . | nindent 4 }}
+    app: rabbitmq
+spec:
+  replicas: {{ .Values.rabbitmq.replicas }}
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        project: {{ .Values.global.project }}
+    spec:
+      containers:
+        - name: rabbitmq
+          image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
+          imagePullPolicy: {{ .Values.rabbitmq.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.rabbitmq.resources | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.rabbitmq.service.port }}
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "k8s-app.fullname" . }}-rabbitmq-secret
+                  key: user
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "k8s-app.fullname" . }}-rabbitmq-secret
+                  key: password
+{{- end }}

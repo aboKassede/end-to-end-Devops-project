@@ -1,0 +1,95 @@
+# Default values for k8s-app
+global:
+  project: k8s
+
+# Tomcat configuration
+tomcat:
+  enabled: true
+  image:
+    repository: abokassede/kubernetes
+    tag: tomcat-v12
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    className: alb
+    host: abokassede.xyz
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+
+# MySQL configuration
+mysql:
+  enabled: true
+  image:
+    repository: abokassede/kubernetes
+    tag: mysql-v1
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    port: 3306
+  persistence:
+    enabled: true
+    storageClass: default
+    size: 3Gi
+  secret:
+    rootPassword: YWRtaW4xMjM=  # admin123 base64 encoded
+
+# Memcached configuration
+memcached:
+  enabled: true
+  image:
+    repository: memcached
+    tag: "1.6"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    port: 11211
+
+# RabbitMQ configuration
+rabbitmq:
+  enabled: true
+  image:
+    repository: rabbitmq
+    tag: "3.9"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  service:
+    type: ClusterIP
+    port: 5672
+  secret:
+    user: dGVzdA==      # test base64 encoded
+    password: dGVzdA==  # test base64 encoded

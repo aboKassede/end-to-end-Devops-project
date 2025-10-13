@@ -1,0 +1,16 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "k8s-app.fullname" . }}-rabbitmq
+  labels:
+    {{- include "k8s-app.labels" . | nindent 4 }}
+    app: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+  - port: {{ .Values.rabbitmq.service.port }}
+    targetPort: {{ .Values.rabbitmq.service.port }}
+  type: {{ .Values.rabbitmq.service.type }}
+{{- end }}

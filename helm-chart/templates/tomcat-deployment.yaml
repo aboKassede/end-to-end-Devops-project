@@ -1,0 +1,64 @@
+{{- if .Values.tomcat.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8s-app.fullname" . }}-tomcat
+  labels:
+    {{- include "k8s-app.labels" . | nindent 4 }}
+    app: tomcat
+spec:
+  replicas: {{ .Values.tomcat.replicas }}
+  selector:
+    matchLabels:
+      app: tomcat
+  template:
+    metadata:
+      labels:
+        app: tomcat
+        project: {{ .Values.global.project }}
+    spec:
+      imagePullSecrets:
+      - name: my-dockerhub-secret
+      containers:
+      - name: tomcat
+        image: "{{ .Values.tomcat.image.repository }}:{{ .Values.tomcat.image.tag }}"
+        imagePullPolicy: {{ .Values.tomcat.image.pullPolicy }}
+        resources:
+          {{- toYaml .Values.tomcat.resources | nindent 10 }}
+        ports:
+        - containerPort: {{ .Values.tomcat.service.port }}
+      initContainers:
+      {{- if .Values.mysql.enabled }}
+      - name: init-mysql
+        image: busybox
+        command: ['sh', '-c']
+        args:
+          - |
+            until nslookup {{ include "k8s-app.fullname" . }}-mysql.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do
+              echo "Waiting for MySQL..."
+              sleep 2
+            done
+      {{- end }}
+      {{- if .Values.memcached.enabled }}
+      - name: init-memcached
+        image: busybox
+        command: ['sh', '-c']
+        args:
+          - |
+            until nslookup {{ include "k8s-app.fullname" . }}-memcached.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do
+              echo "Waiting for Memcached..."
+              sleep 2
+            done
+      {{- end }}
+      {{- if .Values.rabbitmq.enabled }}
+      - name: init-rabbitmq
+        image: busybox
+        command: ['sh', '-c']
+        args:
+          - |
+            until nslookup {{ include "k8s-app.fullname" . }}-rabbitmq.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do
+              echo "Waiting for RabbitMQ..."
+              sleep 2
+            done
+      {{- end }}
+{{- end }}
